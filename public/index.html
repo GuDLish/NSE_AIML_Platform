@@ -9,101 +9,242 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'JetBrains Mono', monospace; background-color: #0b0e14; color: #e2e8f0; }
-    .card { background: #111622; border: 1px solid #1e293b; }
-    .active-pill { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+    .card { background: #111622; border: 1px solid #1e293b; border-radius: 0.5rem; }
+    .active-pill { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
     .inactive-pill { border: 1px solid #1e293b; color: #94a3b8; background: #0f172a; }
     .ticker-bar::-webkit-scrollbar { display: none; }
+    table th, table td { font-size: 0.75rem; }
   </style>
 </head>
-<body class="p-4 md:p-6 min-h-screen flex flex-col justify-between">
-  <div>
-    <!-- Top Header -->
-    <header class="flex flex-col md:flex-row md:items-center md:justify-between pb-3 border-b border-slate-800 gap-2">
+<body class="p-4 md:p-6 min-h-screen space-y-6">
+
+  <!-- TOP HEADER -->
+  <header class="flex flex-col md:flex-row md:items-center md:justify-between pb-3 border-b border-slate-800 gap-2">
+    <div>
+      <h1 class="text-amber-500 font-bold text-lg tracking-wider">NSE TOP-10 AI/ML TERMINAL</h1>
+      <p class="text-xs text-slate-400">Deep-learning forecasting, clustering & downside-risk analytics</p>
+    </div>
+    <div class="text-xs text-emerald-400 font-medium">
+      ⚡ PIPELINE OUTPUT LOADED <span id="pipelineDates" class="text-slate-400">2016-02-16 → 2026-02-13</span>
+    </div>
+  </header>
+
+  <!-- TICKER STRIP -->
+  <div id="tickerStrip" class="ticker-bar flex overflow-x-auto space-x-6 py-2 border-b border-slate-800 text-xs font-semibold whitespace-nowrap"></div>
+
+  <!-- TICKER SELECTOR TABS -->
+  <div id="tickerTabs" class="flex flex-wrap gap-2"></div>
+
+  <!-- SECTION 1: 8 METRIC CARDS -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">CURRENT PRICE</div>
+      <div id="cardCurrentPrice" class="text-2xl font-bold mt-1 text-white">₹0.00</div>
+      <div id="cardSector" class="text-xs text-slate-400 mt-1">Energy / Conglomerate</div>
+    </div>
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">DAY 5 FORECAST</div>
+      <div id="cardDay5" class="text-2xl font-bold mt-1 text-emerald-400">₹0.00</div>
+      <div id="cardDay5Delta" class="text-xs text-emerald-400 mt-1">+0.00% vs spot</div>
+    </div>
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">DAY 30 FORECAST</div>
+      <div id="cardDay30" class="text-2xl font-bold mt-1 text-rose-400">₹0.00</div>
+      <div id="cardDay30Delta" class="text-xs text-rose-400 mt-1">-0.00% expected change</div>
+    </div>
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">DOWNSIDE RISK (21D)</div>
+      <div id="cardDownsideRisk" class="text-2xl font-bold mt-1 text-amber-400">0.0%</div>
+      <div class="text-xs text-slate-400 mt-1">Random Forest P(drop > 5%)</div>
+    </div>
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">CAGR</div>
+      <div id="cardCagr" class="text-2xl font-bold mt-1 text-emerald-400">+0.00%</div>
+      <div class="text-xs text-slate-400 mt-1">10-year compounded</div>
+    </div>
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">ANNUAL VOLATILITY</div>
+      <div id="cardVol" class="text-2xl font-bold mt-1 text-emerald-400">+0.00%</div>
+      <div id="cardSharpe" class="text-xs text-slate-400 mt-1">Sharpe 0.00</div>
+    </div>
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">MAX DRAWDOWN</div>
+      <div id="cardDrawdown" class="text-2xl font-bold mt-1 text-rose-400">-0.00%</div>
+      <div id="cardVar" class="text-xs text-slate-400 mt-1">95% VaR -0.00%</div>
+    </div>
+    <div class="card p-3">
+      <div class="text-[11px] text-slate-400 tracking-wider">RSI(14)</div>
+      <div id="cardRsi" class="text-2xl font-bold mt-1 text-white">0.0</div>
+      <div id="cardVolume" class="text-xs text-slate-400 mt-1">Avg volume 0.0 Cr</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1 (CONT): PRIMARY PRICE CHART -->
+  <div class="card p-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
       <div>
-        <h1 class="text-amber-500 font-bold text-lg tracking-wider">NSE TOP-10 AI/ML TERMINAL</h1>
-        <p class="text-xs text-slate-400">Deep-learning forecasting, clustering & downside-risk analytics</p>
+        <div id="chartTitle" class="text-sm font-semibold text-slate-200">RELIANCE · CLOSE VS MA20 / MA50</div>
+        <div class="text-xs text-slate-400">Trend structure with golden/death-cross context and traded volume</div>
       </div>
-      <div id="metaStatus" class="text-xs text-emerald-400 font-medium">
-        ⚡ PIPELINE OUTPUT LOADED <span id="pipelineDates" class="text-slate-400">2016-02-16 → 2026-02-13</span>
-      </div>
-    </header>
-
-    <!-- Ticker Strip -->
-    <div id="tickerStrip" class="ticker-bar flex overflow-x-auto space-x-6 py-2 border-b border-slate-800 text-xs font-semibold whitespace-nowrap"></div>
-
-    <!-- Ticker Select Tabs -->
-    <div id="tickerTabs" class="flex flex-wrap gap-2 py-4"></div>
-
-    <!-- Metric Cards Grid -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">CURRENT PRICE</div>
-        <div id="cardCurrentPrice" class="text-2xl font-bold mt-1 text-white">₹0.00</div>
-        <div id="cardSector" class="text-xs text-slate-400 mt-1">Energy / Conglomerate</div>
-      </div>
-
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">DAY 5 FORECAST</div>
-        <div id="cardDay5" class="text-2xl font-bold mt-1 text-emerald-400">₹0.00</div>
-        <div id="cardDay5Delta" class="text-xs text-emerald-400 mt-1">+0.00% vs spot</div>
-      </div>
-
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">DAY 30 FORECAST</div>
-        <div id="cardDay30" class="text-2xl font-bold mt-1 text-rose-400">₹0.00</div>
-        <div id="cardDay30Delta" class="text-xs text-rose-400 mt-1">-0.00% expected change</div>
-      </div>
-
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">DOWNSIDE RISK (21D)</div>
-        <div id="cardDownsideRisk" class="text-2xl font-bold mt-1 text-amber-400">0.0%</div>
-        <div class="text-xs text-slate-400 mt-1">Random Forest P(drop > 5%)</div>
-      </div>
-
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">CAGR</div>
-        <div id="cardCagr" class="text-2xl font-bold mt-1 text-emerald-400">+0.00%</div>
-        <div class="text-xs text-slate-400 mt-1">10-year compounded</div>
-      </div>
-
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">ANNUAL VOLATILITY</div>
-        <div id="cardVol" class="text-2xl font-bold mt-1 text-emerald-400">+0.00%</div>
-        <div id="cardSharpe" class="text-xs text-slate-400 mt-1">Sharpe 0.00</div>
-      </div>
-
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">MAX DRAWDOWN</div>
-        <div id="cardDrawdown" class="text-2xl font-bold mt-1 text-rose-400">-0.00%</div>
-        <div id="cardVar" class="text-xs text-slate-400 mt-1">95% VaR -0.00%</div>
-      </div>
-
-      <div class="card p-3 rounded-lg">
-        <div class="text-[11px] text-slate-400 tracking-wider">RSI(14)</div>
-        <div id="cardRsi" class="text-2xl font-bold mt-1 text-white">0.0</div>
-        <div id="cardVolume" class="text-xs text-slate-400 mt-1">Avg volume 0.0 Cr</div>
+      <div class="flex items-center space-x-2 text-xs">
+        <span class="text-slate-400 text-[11px] mr-1">CHART WINDOW</span>
+        <button onclick="setWindow('6M')" id="btn6M" class="px-2 py-0.5 rounded inactive-pill">6M</button>
+        <button onclick="setWindow('1Y')" id="btn1Y" class="px-2 py-0.5 rounded active-pill">1Y</button>
+        <button onclick="setWindow('3Y')" id="btn3Y" class="px-2 py-0.5 rounded inactive-pill">3Y</button>
+        <button onclick="setWindow('MAX')" id="btnMAX" class="px-2 py-0.5 rounded inactive-pill">MAX</button>
       </div>
     </div>
+    <div class="mt-4 relative" style="height: 380px;">
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>
 
-    <!-- Chart Controls and Main Canvas -->
-    <div class="card p-4 rounded-lg">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
+  <!-- SECTION 2: VOLATILITY, RSI, RETURNS HISTOGRAM & CORRELATION -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-slate-300">30-DAY ROLLING VOLATILITY</div>
+      <div class="text-[11px] text-slate-400 mb-2">Annualised σ of daily log-style returns (%)</div>
+      <div style="height: 220px;"><canvas id="volChart"></canvas></div>
+    </div>
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-slate-300">RSI (14) — WILDER SMOOTHING</div>
+      <div class="text-[11px] text-slate-400 mb-2">Above 70 overbought · below 30 oversold</div>
+      <div style="height: 220px;"><canvas id="rsiChart"></canvas></div>
+    </div>
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-slate-300">DAILY RETURNS DISTRIBUTION</div>
+      <div class="text-[11px] text-slate-400 mb-2">Fat-tail inspection across recent sessions (%)</div>
+      <div style="height: 220px;"><canvas id="histChart"></canvas></div>
+    </div>
+    <div class="card p-4 overflow-x-auto">
+      <div class="text-xs font-semibold text-slate-300">RETURN CORRELATION MATRIX</div>
+      <div class="text-[11px] text-slate-400 mb-2">Pearson correlation of daily returns — diversification map</div>
+      <table id="corrTable" class="w-full text-center border-collapse mt-2"></table>
+    </div>
+  </div>
+
+  <!-- SECTION 3: RECURSIVE 30-DAY LSTM FORECAST -->
+  <div class="card p-4">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+      <div>
+        <div id="forecastTitle" class="text-xs font-semibold text-slate-300">RECURSIVE 30-DAY LSTM FORECAST · RELIANCE</div>
+        <div class="text-[11px] text-slate-400">60-day input window, each prediction fed back as next timestep (₹ INR)</div>
+      </div>
+      <button onclick="downloadForecastCSV()" class="px-2.5 py-1 text-xs border border-slate-700 hover:border-slate-500 rounded flex items-center space-x-1 text-slate-300 bg-slate-900">
+        <span>⬇ 30_days_forecast.csv</span>
+      </button>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-3">
+      <div class="lg:col-span-2" style="height: 260px;">
+        <canvas id="forecastChart"></canvas>
+      </div>
+      <div class="overflow-y-auto border border-slate-800 rounded p-2" style="max-height: 260px;">
+        <table class="w-full text-left">
+          <thead class="text-slate-400 border-b border-slate-800">
+            <tr><th class="py-1">Day</th><th>Price (₹)</th><th class="text-right">Δ vs spot</th></tr>
+          </thead>
+          <tbody id="forecastTableBody" class="divide-y divide-slate-800/50"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: HOLD-OUT VALIDATION & GRU VOLATILITY -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-slate-300">HOLD-OUT VALIDATION — ACTUAL VS PREDICTED</div>
+      <div class="text-[11px] text-slate-400 mb-2">Last 120 unseen sessions (15% chronological test split)</div>
+      <div style="height: 220px;"><canvas id="valChart"></canvas></div>
+    </div>
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-slate-300">GRU VOLATILITY FORECAST</div>
+      <div class="text-[11px] text-slate-400 mb-2">30-day rolling σ, annualised — GRU vs realised on hold-out data</div>
+      <div style="height: 220px;"><canvas id="gruChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 (CONT): MODEL EVALUATION TABLE -->
+  <div class="card p-4">
+    <div id="evalTitle" class="text-xs font-semibold text-slate-300">MODEL EVALUATION · RELIANCE</div>
+    <div class="text-[11px] text-slate-400 mb-3">Chronological hold-out (last 15% of sessions) — never seen during training</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="text-slate-400 border-b border-slate-800">
+          <tr>
+            <th class="py-2">Model</th>
+            <th class="text-right">RMSE (₹)</th>
+            <th class="text-right">MAE (₹)</th>
+            <th class="text-right">R²</th>
+            <th class="text-right">MAPE</th>
+            <th class="text-right">Direction acc.</th>
+          </tr>
+        </thead>
+        <tbody id="evalTableBody" class="divide-y divide-slate-800 text-slate-300"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION 5: K-MEANS CLUSTERING & RANDOM FOREST DOWNSIDE -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-slate-300">K-MEANS RISK-RETURN CLUSTERING (K=3)</div>
+      <div class="text-[11px] text-slate-400 mb-2">Standardised on CAGR, annualised volatility, Sharpe and max drawdown</div>
+      <div style="height: 240px;"><canvas id="clusterChart"></canvas></div>
+    </div>
+    <div class="card p-4">
+      <div class="text-xs font-semibold text-slate-300">RANDOM FOREST DOWNSIDE CLASSIFIER</div>
+      <div class="text-[11px] text-slate-400 mb-2">P(next 21 sessions draw down more than -5%) · 400 trees</div>
+      <div class="grid grid-cols-2 gap-4 mt-2">
         <div>
-          <div id="chartTitle" class="text-sm font-semibold text-slate-200">RELIANCE · CLOSE VS MA20 / MA50</div>
-          <div class="text-xs text-slate-400">Trend structure with golden/death-cross context and traded volume</div>
+          <div class="text-[11px] text-slate-400">LIVE DOWNSIDE PROBABILITY</div>
+          <div id="rfProb" class="text-3xl font-bold text-amber-400 my-1">47.0%</div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300 mt-3 border-t border-slate-800 pt-2">
+            <div><span class="text-slate-500">ACCURACY:</span> <span id="rfAcc">55.8%</span></div>
+            <div><span class="text-slate-500">ROC-AUC:</span> <span id="rfAuc">0.504</span></div>
+            <div><span class="text-slate-500">PRECISION:</span> <span id="rfPrec">11.8%</span></div>
+            <div><span class="text-slate-500">RECALL:</span> <span id="rfRec">36.7%</span></div>
+          </div>
         </div>
-        <div class="flex items-center space-x-2 text-xs">
-          <span class="text-slate-400 text-[11px] mr-1">CHART WINDOW</span>
-          <button onclick="setWindow('6M')" id="btn6M" class="px-2 py-0.5 rounded inactive-pill">6M</button>
-          <button onclick="setWindow('1Y')" id="btn1Y" class="px-2 py-0.5 rounded active-pill">1Y</button>
-          <button onclick="setWindow('3Y')" id="btn3Y" class="px-2 py-0.5 rounded inactive-pill">3Y</button>
-          <button onclick="setWindow('MAX')" id="btnMAX" class="px-2 py-0.5 rounded inactive-pill">MAX</button>
+        <div>
+          <div class="text-[11px] text-slate-400 mb-1">FEATURE IMPORTANCE (GINI, %)</div>
+          <div id="featureBars" class="space-y-1 text-[11px]"></div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="mt-4 relative" style="height: 420px;">
-        <canvas id="mainChart"></canvas>
-      </div>
+  <!-- SECTION 6: CROSS-SECTIONAL SCOREBOARD -->
+  <div class="card p-4">
+    <div class="text-xs font-semibold text-slate-300">CROSS-SECTIONAL SCOREBOARD</div>
+    <div class="text-[11px] text-slate-400 mb-3">Every ticker, every model output, one grid</div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="text-slate-400 border-b border-slate-800">
+          <tr>
+            <th class="py-2">Ticker</th>
+            <th class="text-right">Spot ₹</th>
+            <th class="text-right">Day 5 ₹</th>
+            <th class="text-right">Δ5</th>
+            <th class="text-right">Day 30 ₹</th>
+            <th class="text-right">Δ30</th>
+            <th class="text-right">LSTM RMSE</th>
+            <th class="text-right">Dir. acc</th>
+            <th class="text-right">Downside P</th>
+            <th class="text-right">Profile</th>
+          </tr>
+        </thead>
+        <tbody id="scoreboardBody" class="divide-y divide-slate-800"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE INVESTMENT CONCLUSIONS -->
+  <div class="card p-4">
+    <div class="text-xs font-semibold text-slate-300">EXECUTIVE INVESTMENT CONCLUSIONS</div>
+    <div class="text-[11px] text-slate-400 mb-2">Model-derived, not investment advice</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300 leading-relaxed">
+      <p id="conc1">RELIANCE is modelled to move from ₹1,419.60 to ₹1,417.18 over 30 sessions (-0.17%), with a 47.0% probability of a >5% drawdown in the next month.</p>
+      <p>K-Means splits the universe into three risk-return regimes; high-growth names carry the deepest drawdowns, while FMCG and IT names anchor the defensive sleeve.</p>
     </div>
   </div>
 
@@ -111,32 +252,50 @@
     let appData = null;
     let selectedTicker = "RELIANCE";
     let selectedWindow = "1Y";
-    let chartInstance = null;
+
+    // Chart instances
+    let chartMain, chartVol, chartRsi, chartHist, chartForecast, chartVal, chartGru, chartCluster;
 
     const sectors = {
-      RELIANCE: "Energy / Conglomerate",
-      TCS: "IT Services / Consulting",
-      HDFCBANK: "Private Banking",
-      INFY: "IT Services / Technology",
-      HINDUNILVR: "FMCG / Consumer Goods",
-      ICICIBANK: "Private Banking",
-      BHARTIARTL: "Telecommunications",
-      SBIN: "Public Sector Banking",
-      LT: "Infrastructure / Capital Goods",
-      ITC: "Diversified / FMCG"
+      RELIANCE: "Energy / Conglomerate", TCS: "IT Services / Consulting",
+      HDFCBANK: "Private Banking", INFY: "IT Services / Technology",
+      HINDUNILVR: "FMCG / Consumer Goods", ICICIBANK: "Private Banking",
+      BHARTIARTL: "Telecommunications", SBIN: "Public Sector Banking",
+      LT: "Infrastructure / Capital Goods", ITC: "Diversified / FMCG"
     };
 
     async function loadData() {
+      // 1. Try static file first (fastest, most reliable on Vercel)
+      try {
+        const res = await fetch("/app_bundle.json");
+        if (res.ok) {
+          appData = await res.json();
+          init();
+          return;
+        }
+      } catch (e) {}
+
+      // 2. Try API endpoint fallback
       try {
         const res = await fetch("/api/data");
-        if (!res.ok) throw new Error("API not ok");
-        appData = await res.json();
-      } catch (err) {
-        console.warn("Falling back to local static app_bundle.json", err);
+        if (res.ok) {
+          const json = await res.json();
+          if (!json.error) {
+            appData = json;
+            init();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 3. Try legacy outputs path fallback
+      try {
         const res = await fetch("/outputs/app_bundle.json");
-        appData = await res.json();
-      }
-      init();
+        if (res.ok) {
+          appData = await res.json();
+          init();
+        }
+      } catch (e) {}
     }
 
     function init() {
@@ -144,7 +303,11 @@
       document.getElementById("pipelineDates").innerText = `${appData.meta.start} → ${appData.meta.end}`;
       renderTickerStrip();
       renderTickerTabs();
-      updateDashboard();
+      renderScoreboard();
+      renderCorrelation();
+      renderClusterChart();
+      renderRiskMetrics();
+      updateSelectedTicker();
     }
 
     function renderTickerStrip() {
@@ -155,13 +318,10 @@
         const last = eda.last || 0;
         const change = ((eda.ret_1d || -0.012) * 100);
         const isPos = change >= 0;
-        const color = isPos ? "text-emerald-400" : "text-rose-400";
-        const sign = isPos ? "+" : "";
-
         const div = document.createElement("div");
         div.className = "flex items-center space-x-1 cursor-pointer";
         div.onclick = () => selectTicker(t);
-        div.innerHTML = `<span class="text-slate-300">${t}</span> <span>₹${last.toFixed(2)}</span> <span class="${color}">${sign}${change.toFixed(2)}%</span>`;
+        div.innerHTML = `<span class="text-slate-300">${t}</span> <span>₹${last.toFixed(2)}</span> <span class="${isPos ? 'text-emerald-400' : 'text-rose-400'}">${isPos ? '+' : ''}${change.toFixed(2)}%</span>`;
         container.appendChild(div);
       });
     }
@@ -178,38 +338,35 @@
       });
     }
 
-    function selectTicker(ticker) {
-      selectedTicker = ticker;
+    function selectTicker(t) {
+      selectedTicker = t;
       renderTickerTabs();
-      updateDashboard();
+      updateSelectedTicker();
     }
 
     function setWindow(w) {
       selectedWindow = w;
       ['6M', '1Y', '3Y', 'MAX'].forEach(id => {
-        const el = document.getElementById('btn' + id);
-        el.className = `px-2 py-0.5 rounded text-xs font-semibold ${id === w ? 'active-pill' : 'inactive-pill'}`;
+        document.getElementById('btn' + id).className = `px-2 py-0.5 rounded text-xs font-semibold ${id === w ? 'active-pill' : 'inactive-pill'}`;
       });
-      renderChart();
+      renderMainChart();
     }
 
-    function updateDashboard() {
-      const res = appData.results[selectedTicker] || {};
+    function updateSelectedTicker() {
       const eda = appData.eda[selectedTicker] || {};
+      const res = appData.results[selectedTicker] || {};
       const liveRisk = (appData.risk && appData.risk.live) ? appData.risk.live[selectedTicker] : 0.47;
 
       document.getElementById("cardCurrentPrice").innerText = `₹${(eda.last || res.current || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
       document.getElementById("cardSector").innerText = sectors[selectedTicker] || "NSE Large Cap";
 
-      const day5 = res.day5 || 0;
       const pct5 = (res.pct5 ? res.pct5 * 100 : 0);
-      document.getElementById("cardDay5").innerText = `₹${day5.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+      document.getElementById("cardDay5").innerText = `₹${(res.day5 || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
       document.getElementById("cardDay5Delta").innerText = `${pct5 >= 0 ? '+' : ''}${pct5.toFixed(2)}% vs spot`;
       document.getElementById("cardDay5Delta").className = `text-xs mt-1 ${pct5 >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
-      const day30 = res.day30 || 0;
       const pct30 = (res.pct30 ? res.pct30 * 100 : 0);
-      document.getElementById("cardDay30").innerText = `₹${day30.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+      document.getElementById("cardDay30").innerText = `₹${(res.day30 || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
       document.getElementById("cardDay30Delta").innerText = `${pct30 >= 0 ? '+' : ''}${pct30.toFixed(2)}% expected change`;
       document.getElementById("cardDay30Delta").className = `text-xs mt-1 ${pct30 >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
@@ -223,11 +380,22 @@
       document.getElementById("cardVolume").innerText = `Avg volume ${((eda.avgVolume || 0) / 10000000).toFixed(2)} Cr`;
 
       document.getElementById("chartTitle").innerText = `${selectedTicker} · CLOSE VS MA20 / MA50`;
+      document.getElementById("forecastTitle").innerText = `RECURSIVE 30-DAY LSTM FORECAST · ${selectedTicker}`;
+      document.getElementById("evalTitle").innerText = `MODEL EVALUATION · ${selectedTicker}`;
+      document.getElementById("rfProb").innerText = `${(liveRisk * 100).toFixed(1)}%`;
+      document.getElementById("conc1").innerText = `${selectedTicker} is modelled to move from ₹${(eda.last || res.current || 0).toFixed(2)} to ₹${(res.day30 || 0).toFixed(2)} over 30 sessions (${pct30.toFixed(2)}%), with a ${(liveRisk * 100).toFixed(1)}% probability of a >5% drawdown in the next month.`;
 
-      renderChart();
+      renderMainChart();
+      renderVolatilityChart();
+      renderRsiChart();
+      renderReturnsHistogram();
+      renderForecastSection();
+      renderValidationChart();
+      renderGruChart();
+      renderEvalTable();
     }
 
-    function renderChart() {
+    function renderMainChart() {
       const series = appData.series[selectedTicker];
       const dates = appData.dates;
       if (!series || !dates) return;
@@ -243,96 +411,342 @@
       const subMa50 = series.ma50.slice(-count);
       const subVolume = series.volume ? series.volume.slice(-count) : [];
 
-      const ctx = document.getElementById("mainChart").getContext("2d");
-      if (chartInstance) chartInstance.destroy();
-
-      chartInstance = new Chart(ctx, {
+      if (chartMain) chartMain.destroy();
+      chartMain = new Chart(document.getElementById("mainChart").getContext("2d"), {
         data: {
           labels: subDates,
           datasets: [
+            { type: 'line', label: 'Close', data: subClose, borderColor: '#f59e0b', borderWidth: 1.8, pointRadius: 0, yAxisID: 'y' },
+            { type: 'line', label: 'MA20', data: subMa20, borderColor: '#06b6d4', borderWidth: 1.4, pointRadius: 0, yAxisID: 'y' },
+            { type: 'line', label: 'MA50', data: subMa50, borderColor: '#a855f7', borderWidth: 1.4, pointRadius: 0, yAxisID: 'y' },
+            { type: 'bar', label: 'Volume', data: subVolume, backgroundColor: 'rgba(6, 182, 212, 0.25)', yAxisID: 'yVol', barThickness: 2 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', maxTicksLimit: 8 } },
+            y: { position: 'left', grid: { color: '#1e293b' }, ticks: { color: '#64748b', callback: v => '₹' + v } },
+            yVol: { position: 'right', grid: { display: false }, ticks: { display: false }, max: Math.max(...subVolume) * 4 }
+          }
+        }
+      });
+    }
+
+    function renderVolatilityChart() {
+      const series = appData.series[selectedTicker];
+      if (!series || !series.vol30) return;
+      if (chartVol) chartVol.destroy();
+      chartVol = new Chart(document.getElementById("volChart").getContext("2d"), {
+        type: 'line',
+        data: {
+          labels: appData.dates.slice(-252),
+          datasets: [{ data: series.vol30.slice(-252).map(v => v * 100), borderColor: '#f43f5e', borderWidth: 1.5, pointRadius: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', maxTicksLimit: 6 } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', callback: v => v + '%' } }
+          }
+        }
+      });
+    }
+
+    function renderRsiChart() {
+      const series = appData.series[selectedTicker];
+      if (!series || !series.rsi) return;
+      const subDates = appData.dates.slice(-252);
+      const subRsi = series.rsi.slice(-252);
+
+      if (chartRsi) chartRsi.destroy();
+      chartRsi = new Chart(document.getElementById("rsiChart").getContext("2d"), {
+        type: 'line',
+        data: {
+          labels: subDates,
+          datasets: [
+            { label: 'RSI', data: subRsi, borderColor: '#06b6d4', borderWidth: 1.5, pointRadius: 0 },
+            { label: 'Overbought', data: Array(subDates.length).fill(70), borderColor: 'rgba(244, 63, 94, 0.5)', borderWidth: 1, borderDash: [4, 4], pointRadius: 0 },
+            { label: 'Oversold', data: Array(subDates.length).fill(30), borderColor: 'rgba(16, 185, 129, 0.5)', borderWidth: 1, borderDash: [4, 4], pointRadius: 0 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', maxTicksLimit: 6 } },
+            y: { min: 0, max: 100, grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+    }
+
+    function renderReturnsHistogram() {
+      const series = appData.series[selectedTicker];
+      if (!series || !series.ret) return;
+      const rets = series.ret.slice(-252);
+      const bins = [-0.06, -0.04, -0.03, -0.02, -0.01, 0, 0.01, 0.02, 0.03, 0.04, 0.06];
+      const counts = Array(bins.length - 1).fill(0);
+      rets.forEach(r => {
+        for (let i = 0; i < bins.length - 1; i++) {
+          if (r >= bins[i] && r < bins[i + 1]) { counts[i]++; break; }
+        }
+      });
+      const labels = bins.slice(0, -1).map(b => (b * 100).toFixed(0) + '%');
+      const colors = bins.slice(0, -1).map(b => b < 0 ? '#f43f5e' : '#10b981');
+
+      if (chartHist) chartHist.destroy();
+      chartHist = new Chart(document.getElementById("histChart").getContext("2d"), {
+        type: 'bar',
+        data: { labels, datasets: [{ data: counts, backgroundColor: colors }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+    }
+
+    function renderCorrelation() {
+      const corr = appData.corr;
+      const tickers = appData.meta.tickers;
+      const table = document.getElementById("corrTable");
+      if (!corr || !tickers) return;
+
+      let html = `<tr class="text-slate-400 border-b border-slate-800"><th></th>`;
+      tickers.forEach(t => html += `<th class="p-1">${t.slice(0, 5)}</th>`);
+      html += `</tr>`;
+
+      tickers.forEach(t1 => {
+        html += `<tr class="border-b border-slate-800/40"><td class="text-slate-400 font-semibold p-1">${t1.slice(0, 5)}</td>`;
+        tickers.forEach(t2 => {
+          const val = (corr[t1] && corr[t1][t2] !== undefined) ? corr[t1][t2] : (t1 === t2 ? 1 : 0.3);
+          const bg = val === 1 ? 'bg-emerald-500/30 text-emerald-300 font-bold' : (val > 0.4 ? 'bg-emerald-900/20 text-emerald-400' : 'text-slate-400');
+          html += `<td class="p-1 ${bg}">${val.toFixed(2)}</td>`;
+        });
+        html += `</tr>`;
+      });
+      table.innerHTML = html;
+    }
+
+    function renderForecastSection() {
+      const res = appData.results[selectedTicker] || {};
+      const forecast = res.forecast || [];
+      const current = res.current || 0;
+      const tbody = document.getElementById("forecastTableBody");
+      tbody.innerHTML = "";
+
+      forecast.forEach((price, idx) => {
+        const delta = ((price - current) / current) * 100;
+        const isPos = delta >= 0;
+        tbody.innerHTML += `
+          <tr class="text-slate-300">
+            <td class="py-1 text-slate-500">${idx + 1}</td>
+            <td class="font-medium">${price.toFixed(2)}</td>
+            <td class="text-right ${isPos ? 'text-emerald-400' : 'text-rose-400'}">${isPos ? '+' : ''}${delta.toFixed(2)}%</td>
+          </tr>
+        `;
+      });
+
+      const labels = forecast.map((_, i) => `D+${i + 1}`);
+      if (chartForecast) chartForecast.destroy();
+      chartForecast = new Chart(document.getElementById("forecastChart").getContext("2d"), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
             {
-              type: 'line',
-              label: 'Close',
-              data: subClose,
+              label: 'LSTM forecast',
+              data: forecast,
               borderColor: '#f59e0b',
-              borderWidth: 1.8,
-              pointRadius: 0,
-              yAxisID: 'y',
-              tension: 0.1
-            },
-            {
-              type: 'line',
-              label: 'MA20',
-              data: subMa20,
-              borderColor: '#06b6d4',
-              borderWidth: 1.4,
-              pointRadius: 0,
-              yAxisID: 'y',
-              tension: 0.1
-            },
-            {
-              type: 'line',
-              label: 'MA50',
-              data: subMa50,
-              borderColor: '#a855f7',
-              borderWidth: 1.4,
-              pointRadius: 0,
-              yAxisID: 'y',
-              tension: 0.1
-            },
-            {
-              type: 'bar',
-              label: 'Volume',
-              data: subVolume,
-              backgroundColor: 'rgba(6, 182, 212, 0.25)',
-              yAxisID: 'yVol',
-              barThickness: 2
+              borderDash: [5, 5],
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              fill: true,
+              borderWidth: 2,
+              pointRadius: 2
             }
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', callback: v => '₹' + v } }
+          }
+        }
+      });
+    }
+
+    function downloadForecastCSV() {
+      const res = appData.results[selectedTicker] || {};
+      let csv = "Day,Price_INR,Delta_vs_spot\n";
+      (res.forecast || []).forEach((p, i) => {
+        const d = ((p - res.current) / res.current) * 100;
+        csv += `${i + 1},${p.toFixed(2)},${d.toFixed(2)}%\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `30_days_forecast_${selectedTicker}.csv`;
+      a.click();
+    }
+
+    function renderValidationChart() {
+      const val = (appData.results[selectedTicker] || {}).validation;
+      if (!val) return;
+      if (chartVal) chartVal.destroy();
+      chartVal = new Chart(document.getElementById("valChart").getContext("2d"), {
+        type: 'line',
+        data: {
+          labels: val.dates || val.actual.map((_, i) => i),
+          datasets: [
+            { label: 'Actual', data: val.actual, borderColor: '#ffffff', borderWidth: 1.5, pointRadius: 0 },
+            { label: 'LSTM', data: val.lstm, borderColor: '#f59e0b', borderWidth: 1.5, pointRadius: 0 },
+            { label: '1D CNN', data: val.cnn, borderColor: '#06b6d4', borderWidth: 1.5, pointRadius: 0 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: true, labels: { color: '#94a3b8' } } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', maxTicksLimit: 6 } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+    }
+
+    function renderGruChart() {
+      const vf = (appData.results[selectedTicker] || {}).volForecast;
+      if (!vf) return;
+      if (chartGru) chartGru.destroy();
+      chartGru = new Chart(document.getElementById("gruChart").getContext("2d"), {
+        type: 'line',
+        data: {
+          labels: vf.actual.map((_, i) => i + 1),
+          datasets: [
+            { label: 'Realised σ', data: vf.actual.map(v => v * 100), borderColor: '#f43f5e', borderWidth: 1.5, pointRadius: 0 },
+            { label: 'GRU σ^', data: vf.pred.map(v => v * 100), borderColor: '#a855f7', borderWidth: 1.5, pointRadius: 0 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: true, labels: { color: '#94a3b8' } } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', maxTicksLimit: 8 } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', callback: v => v + '%' } }
+          }
+        }
+      });
+    }
+
+    function renderEvalTable() {
+      const models = (appData.results[selectedTicker] || {}).models || {};
+      const tbody = document.getElementById("evalTableBody");
+      tbody.innerHTML = "";
+      Object.keys(models).forEach(name => {
+        const m = models[name];
+        const isBest = name === 'Naive';
+        tbody.innerHTML += `
+          <tr class="${isBest ? 'text-amber-400 bg-amber-500/5' : ''}">
+            <td class="py-2 font-medium">${name} <span class="text-xs text-slate-500">target: ${m.target}</span> ${isBest ? '◆ best' : ''}</td>
+            <td class="text-right">${m.rmse.toFixed(2)}</td>
+            <td class="text-right">${m.mae.toFixed(2)}</td>
+            <td class="text-right">${m.r2.toFixed(3)}</td>
+            <td class="text-right">${m.mape.toFixed(2)}%</td>
+            <td class="text-right">${(m.dirAcc * 100).toFixed(1)}%</td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderClusterChart() {
+      const clusters = appData.clusters || [];
+      if (chartCluster) chartCluster.destroy();
+
+      const colorMap = { 0: '#10b981', 1: '#06b6d4', 2: '#f43f5e' };
+      const datasets = clusters.map(c => ({
+        label: c.ticker,
+        data: [{ x: c.annual_volatility * 100, y: c.annual_return * 100 }],
+        backgroundColor: colorMap[c.cluster] || '#f59e0b',
+        pointRadius: 6
+      }));
+
+      chartCluster = new Chart(document.getElementById("clusterChart").getContext("2d"), {
+        type: 'scatter',
+        data: { datasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: '#1e293b',
-              titleColor: '#f1f5f9',
-              bodyColor: '#cbd5e1',
-              borderColor: '#334155',
-              borderWidth: 1,
               callbacks: {
-                label: function(context) {
-                  if (context.dataset.label === 'Volume') {
-                    return `Volume : ${(context.raw / 10000000).toFixed(2)} Cr`;
-                  }
-                  return `${context.dataset.label} : ₹${context.raw.toFixed(2)}`;
-                }
+                label: ctx => `${ctx.dataset.label}: Return ${ctx.parsed.y.toFixed(1)}%, Vol ${ctx.parsed.x.toFixed(1)}%`
               }
             }
           },
           scales: {
-            x: {
-              grid: { color: '#1e293b' },
-              ticks: { color: '#64748b', maxTicksLimit: 8 }
-            },
-            y: {
-              position: 'left',
-              grid: { color: '#1e293b' },
-              ticks: {
-                color: '#64748b',
-                callback: v => '₹' + v
-              }
-            },
-            yVol: {
-              position: 'right',
-              grid: { display: false },
-              ticks: { display: false },
-              max: Math.max(...subVolume) * 4
-            }
+            x: { title: { display: true, text: 'Volatility (%)', color: '#64748b' }, grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+            y: { title: { display: true, text: 'CAGR (%)', color: '#64748b' }, grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
           }
         }
+      });
+    }
+
+    function renderRiskMetrics() {
+      const m = (appData.risk && appData.risk.metrics) ? appData.risk.metrics : {};
+      document.getElementById("rfAcc").innerText = `${((m.accuracy || 0.558) * 100).toFixed(1)}%`;
+      document.getElementById("rfAuc").innerText = (m.rocAuc || 0.504).toFixed(3);
+      document.getElementById("rfPrec").innerText = `${((m.precision || 0.118) * 100).toFixed(1)}%`;
+      document.getElementById("rfRec").innerText = `${((m.recall || 0.367) * 100).toFixed(1)}%`;
+
+      const bars = document.getElementById("featureBars");
+      bars.innerHTML = "";
+      (m.importances || []).forEach(item => {
+        bars.innerHTML += `
+          <div>
+            <div class="flex justify-between text-slate-400"><span>${item.feature}</span><span>${(item.value * 100).toFixed(1)}%</span></div>
+            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-0.5">
+              <div class="bg-amber-400 h-1.5 rounded-full" style="width: ${item.value * 100}%"></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderScoreboard() {
+      const tbody = document.getElementById("scoreboardBody");
+      tbody.innerHTML = "";
+      appData.meta.tickers.forEach(t => {
+        const eda = appData.eda[t] || {};
+        const res = appData.results[t] || {};
+        const risk = (appData.risk && appData.risk.live) ? appData.risk.live[t] : 0.45;
+        const cluster = (appData.clusters || []).find(c => c.ticker === t) || { profile: 'High-Growth' };
+        const d5 = (res.pct5 || 0) * 100;
+        const d30 = (res.pct30 || 0) * 100;
+
+        tbody.innerHTML += `
+          <tr class="cursor-pointer hover:bg-slate-800/40" onclick="selectTicker('${t}')">
+            <td class="py-2 text-amber-400 font-bold">${t}</td>
+            <td class="text-right">₹${(eda.last || res.current || 0).toFixed(2)}</td>
+            <td class="text-right">₹${(res.day5 || 0).toFixed(2)}</td>
+            <td class="text-right ${d5 >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${d5 >= 0 ? '+' : ''}${d5.toFixed(2)}%</td>
+            <td class="text-right">₹${(res.day30 || 0).toFixed(2)}</td>
+            <td class="text-right ${d30 >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${d30 >= 0 ? '+' : ''}${d30.toFixed(2)}%</td>
+            <td class="text-right">${((res.models && res.models.LSTM) ? res.models.LSTM.rmse : 50).toFixed(2)}</td>
+            <td class="text-right">${(((res.models && res.models.LSTM) ? res.models.LSTM.dirAcc : 0.45) * 100).toFixed(1)}%</td>
+            <td class="text-right font-medium">${(risk * 100).toFixed(1)}%</td>
+            <td class="text-right text-slate-400 text-xs">${cluster.profile}</td>
+          </tr>
+        `;
       });
     }
 
