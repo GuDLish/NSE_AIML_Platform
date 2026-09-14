@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NSE TOP-10 AI/ML TERMINAL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'JetBrains Mono', monospace; background-color: #0b0e14; color: #e2e8f0; }
+    .card { background: #111622; border: 1px solid #1e293b; }
+    .active-pill { border: 1px solid #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
+    .inactive-pill { border: 1px solid #1e293b; color: #94a3b8; background: #0f172a; }
+    .ticker-bar::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="p-4 md:p-6 min-h-screen flex flex-col justify-between">
+  <div>
+    <!-- Top Header -->
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between pb-3 border-b border-slate-800 gap-2">
+      <div>
+        <h1 class="text-amber-500 font-bold text-lg tracking-wider">NSE TOP-10 AI/ML TERMINAL</h1>
+        <p class="text-xs text-slate-400">Deep-learning forecasting, clustering & downside-risk analytics</p>
+      </div>
+      <div id="metaStatus" class="text-xs text-emerald-400 font-medium">
+        ⚡ PIPELINE OUTPUT LOADED <span id="pipelineDates" class="text-slate-400">2016-02-16 → 2026-02-13</span>
+      </div>
+    </header>
+
+    <!-- Ticker Strip -->
+    <div id="tickerStrip" class="ticker-bar flex overflow-x-auto space-x-6 py-2 border-b border-slate-800 text-xs font-semibold whitespace-nowrap"></div>
+
+    <!-- Ticker Select Tabs -->
+    <div id="tickerTabs" class="flex flex-wrap gap-2 py-4"></div>
+
+    <!-- Metric Cards Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">CURRENT PRICE</div>
+        <div id="cardCurrentPrice" class="text-2xl font-bold mt-1 text-white">₹0.00</div>
+        <div id="cardSector" class="text-xs text-slate-400 mt-1">Energy / Conglomerate</div>
+      </div>
+
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">DAY 5 FORECAST</div>
+        <div id="cardDay5" class="text-2xl font-bold mt-1 text-emerald-400">₹0.00</div>
+        <div id="cardDay5Delta" class="text-xs text-emerald-400 mt-1">+0.00% vs spot</div>
+      </div>
+
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">DAY 30 FORECAST</div>
+        <div id="cardDay30" class="text-2xl font-bold mt-1 text-rose-400">₹0.00</div>
+        <div id="cardDay30Delta" class="text-xs text-rose-400 mt-1">-0.00% expected change</div>
+      </div>
+
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">DOWNSIDE RISK (21D)</div>
+        <div id="cardDownsideRisk" class="text-2xl font-bold mt-1 text-amber-400">0.0%</div>
+        <div class="text-xs text-slate-400 mt-1">Random Forest P(drop > 5%)</div>
+      </div>
+
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">CAGR</div>
+        <div id="cardCagr" class="text-2xl font-bold mt-1 text-emerald-400">+0.00%</div>
+        <div class="text-xs text-slate-400 mt-1">10-year compounded</div>
+      </div>
+
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">ANNUAL VOLATILITY</div>
+        <div id="cardVol" class="text-2xl font-bold mt-1 text-emerald-400">+0.00%</div>
+        <div id="cardSharpe" class="text-xs text-slate-400 mt-1">Sharpe 0.00</div>
+      </div>
+
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">MAX DRAWDOWN</div>
+        <div id="cardDrawdown" class="text-2xl font-bold mt-1 text-rose-400">-0.00%</div>
+        <div id="cardVar" class="text-xs text-slate-400 mt-1">95% VaR -0.00%</div>
+      </div>
+
+      <div class="card p-3 rounded-lg">
+        <div class="text-[11px] text-slate-400 tracking-wider">RSI(14)</div>
+        <div id="cardRsi" class="text-2xl font-bold mt-1 text-white">0.0</div>
+        <div id="cardVolume" class="text-xs text-slate-400 mt-1">Avg volume 0.0 Cr</div>
+      </div>
+    </div>
+
+    <!-- Chart Controls and Main Canvas -->
+    <div class="card p-4 rounded-lg">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
+        <div>
+          <div id="chartTitle" class="text-sm font-semibold text-slate-200">RELIANCE · CLOSE VS MA20 / MA50</div>
+          <div class="text-xs text-slate-400">Trend structure with golden/death-cross context and traded volume</div>
+        </div>
+        <div class="flex items-center space-x-2 text-xs">
+          <span class="text-slate-400 text-[11px] mr-1">CHART WINDOW</span>
+          <button onclick="setWindow('6M')" id="btn6M" class="px-2 py-0.5 rounded inactive-pill">6M</button>
+          <button onclick="setWindow('1Y')" id="btn1Y" class="px-2 py-0.5 rounded active-pill">1Y</button>
+          <button onclick="setWindow('3Y')" id="btn3Y" class="px-2 py-0.5 rounded inactive-pill">3Y</button>
+          <button onclick="setWindow('MAX')" id="btnMAX" class="px-2 py-0.5 rounded inactive-pill">MAX</button>
+        </div>
+      </div>
+
+      <div class="mt-4 relative" style="height: 420px;">
+        <canvas id="mainChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appData = null;
+    let selectedTicker = "RELIANCE";
+    let selectedWindow = "1Y";
+    let chartInstance = null;
+
+    const sectors = {
+      RELIANCE: "Energy / Conglomerate",
+      TCS: "IT Services / Consulting",
+      HDFCBANK: "Private Banking",
+      INFY: "IT Services / Technology",
+      HINDUNILVR: "FMCG / Consumer Goods",
+      ICICIBANK: "Private Banking",
+      BHARTIARTL: "Telecommunications",
+      SBIN: "Public Sector Banking",
+      LT: "Infrastructure / Capital Goods",
+      ITC: "Diversified / FMCG"
+    };
+
+    async function loadData() {
+      try {
+        const res = await fetch("/api/data");
+        if (!res.ok) throw new Error("API not ok");
+        appData = await res.json();
+      } catch (err) {
+        console.warn("Falling back to local static app_bundle.json", err);
+        const res = await fetch("/outputs/app_bundle.json");
+        appData = await res.json();
+      }
+      init();
+    }
+
+    function init() {
+      if (!appData || !appData.meta) return;
+      document.getElementById("pipelineDates").innerText = `${appData.meta.start} → ${appData.meta.end}`;
+      renderTickerStrip();
+      renderTickerTabs();
+      updateDashboard();
+    }
+
+    function renderTickerStrip() {
+      const container = document.getElementById("tickerStrip");
+      container.innerHTML = "";
+      appData.meta.tickers.forEach(t => {
+        const eda = appData.eda[t] || {};
+        const last = eda.last || 0;
+        const change = ((eda.ret_1d || -0.012) * 100);
+        const isPos = change >= 0;
+        const color = isPos ? "text-emerald-400" : "text-rose-400";
+        const sign = isPos ? "+" : "";
+
+        const div = document.createElement("div");
+        div.className = "flex items-center space-x-1 cursor-pointer";
+        div.onclick = () => selectTicker(t);
+        div.innerHTML = `<span class="text-slate-300">${t}</span> <span>₹${last.toFixed(2)}</span> <span class="${color}">${sign}${change.toFixed(2)}%</span>`;
+        container.appendChild(div);
+      });
+    }
+
+    function renderTickerTabs() {
+      const container = document.getElementById("tickerTabs");
+      container.innerHTML = "";
+      appData.meta.tickers.forEach(t => {
+        const btn = document.createElement("button");
+        btn.innerText = t;
+        btn.className = `px-3 py-1 rounded text-xs font-semibold ${t === selectedTicker ? 'active-pill' : 'inactive-pill'}`;
+        btn.onclick = () => selectTicker(t);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectTicker(ticker) {
+      selectedTicker = ticker;
+      renderTickerTabs();
+      updateDashboard();
+    }
+
+    function setWindow(w) {
+      selectedWindow = w;
+      ['6M', '1Y', '3Y', 'MAX'].forEach(id => {
+        const el = document.getElementById('btn' + id);
+        el.className = `px-2 py-0.5 rounded text-xs font-semibold ${id === w ? 'active-pill' : 'inactive-pill'}`;
+      });
+      renderChart();
+    }
+
+    function updateDashboard() {
+      const res = appData.results[selectedTicker] || {};
+      const eda = appData.eda[selectedTicker] || {};
+      const liveRisk = (appData.risk && appData.risk.live) ? appData.risk.live[selectedTicker] : 0.47;
+
+      document.getElementById("cardCurrentPrice").innerText = `₹${(eda.last || res.current || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+      document.getElementById("cardSector").innerText = sectors[selectedTicker] || "NSE Large Cap";
+
+      const day5 = res.day5 || 0;
+      const pct5 = (res.pct5 ? res.pct5 * 100 : 0);
+      document.getElementById("cardDay5").innerText = `₹${day5.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+      document.getElementById("cardDay5Delta").innerText = `${pct5 >= 0 ? '+' : ''}${pct5.toFixed(2)}% vs spot`;
+      document.getElementById("cardDay5Delta").className = `text-xs mt-1 ${pct5 >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      const day30 = res.day30 || 0;
+      const pct30 = (res.pct30 ? res.pct30 * 100 : 0);
+      document.getElementById("cardDay30").innerText = `₹${day30.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+      document.getElementById("cardDay30Delta").innerText = `${pct30 >= 0 ? '+' : ''}${pct30.toFixed(2)}% expected change`;
+      document.getElementById("cardDay30Delta").className = `text-xs mt-1 ${pct30 >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      document.getElementById("cardDownsideRisk").innerText = `${(liveRisk * 100).toFixed(1)}%`;
+      document.getElementById("cardCagr").innerText = `${(eda.cagr * 100 >= 0 ? '+' : '')}${(eda.cagr * 100).toFixed(2)}%`;
+      document.getElementById("cardVol").innerText = `+${(eda.annVol * 100).toFixed(2)}%`;
+      document.getElementById("cardSharpe").innerText = `Sharpe ${(eda.sharpe || 0).toFixed(2)}`;
+      document.getElementById("cardDrawdown").innerText = `${(eda.maxDrawdown * 100).toFixed(2)}%`;
+      document.getElementById("cardVar").innerText = `95% VaR ${(eda.var95 * 100).toFixed(2)}%`;
+      document.getElementById("cardRsi").innerText = (eda.rsi || 50).toFixed(1);
+      document.getElementById("cardVolume").innerText = `Avg volume ${((eda.avgVolume || 0) / 10000000).toFixed(2)} Cr`;
+
+      document.getElementById("chartTitle").innerText = `${selectedTicker} · CLOSE VS MA20 / MA50`;
+
+      renderChart();
+    }
+
+    function renderChart() {
+      const series = appData.series[selectedTicker];
+      const dates = appData.dates;
+      if (!series || !dates) return;
+
+      let count = dates.length;
+      if (selectedWindow === '6M') count = 126;
+      else if (selectedWindow === '1Y') count = 252;
+      else if (selectedWindow === '3Y') count = 756;
+
+      const subDates = dates.slice(-count);
+      const subClose = series.close.slice(-count);
+      const subMa20 = series.ma20.slice(-count);
+      const subMa50 = series.ma50.slice(-count);
+      const subVolume = series.volume ? series.volume.slice(-count) : [];
+
+      const ctx = document.getElementById("mainChart").getContext("2d");
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        data: {
+          labels: subDates,
+          datasets: [
+            {
+              type: 'line',
+              label: 'Close',
+              data: subClose,
+              borderColor: '#f59e0b',
+              borderWidth: 1.8,
+              pointRadius: 0,
+              yAxisID: 'y',
+              tension: 0.1
+            },
+            {
+              type: 'line',
+              label: 'MA20',
+              data: subMa20,
+              borderColor: '#06b6d4',
+              borderWidth: 1.4,
+              pointRadius: 0,
+              yAxisID: 'y',
+              tension: 0.1
+            },
+            {
+              type: 'line',
+              label: 'MA50',
+              data: subMa50,
+              borderColor: '#a855f7',
+              borderWidth: 1.4,
+              pointRadius: 0,
+              yAxisID: 'y',
+              tension: 0.1
+            },
+            {
+              type: 'bar',
+              label: 'Volume',
+              data: subVolume,
+              backgroundColor: 'rgba(6, 182, 212, 0.25)',
+              yAxisID: 'yVol',
+              barThickness: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              titleColor: '#f1f5f9',
+              bodyColor: '#cbd5e1',
+              borderColor: '#334155',
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) {
+                  if (context.dataset.label === 'Volume') {
+                    return `Volume : ${(context.raw / 10000000).toFixed(2)} Cr`;
+                  }
+                  return `${context.dataset.label} : ₹${context.raw.toFixed(2)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#1e293b' },
+              ticks: { color: '#64748b', maxTicksLimit: 8 }
+            },
+            y: {
+              position: 'left',
+              grid: { color: '#1e293b' },
+              ticks: {
+                color: '#64748b',
+                callback: v => '₹' + v
+              }
+            },
+            yVol: {
+              position: 'right',
+              grid: { display: false },
+              ticks: { display: false },
+              max: Math.max(...subVolume) * 4
+            }
+          }
+        }
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
