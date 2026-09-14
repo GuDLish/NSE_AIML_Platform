@@ -1,0 +1,11 @@
+Ticker,annual_return,annual_volatility,sharpe,max_drawdown,cluster,profile
+RELIANCE,0.2157,0.2617,0.6219,-0.4509,0,High-Growth / High-Risk
+TCS,0.1164,0.23,0.3163,-0.3756,1,Defensive / Low-Volatility
+HDFCBANK,0.1499,0.2184,0.4523,-0.4105,1,Defensive / Low-Volatility
+INFY,0.1277,0.257,0.3474,-0.3655,1,Defensive / Low-Volatility
+HINDUNILVR,0.1294,0.212,0.3765,-0.3046,1,Defensive / Low-Volatility
+ICICIBANK,0.2385,0.2924,0.6473,-0.4831,0,High-Growth / High-Risk
+BHARTIARTL,0.2225,0.283,0.6145,-0.4678,0,High-Growth / High-Risk
+SBIN,0.2387,0.3162,0.6204,-0.5949,0,High-Growth / High-Risk
+LT,0.2084,0.256,0.6079,-0.5444,0,High-Growth / High-Risk
+ITC,0.0901,0.2356,0.2173,-0.5528,2,Balanced Core
